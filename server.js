@@ -17,6 +17,40 @@ app.use(cors());
 const memoStorage = multer.memoryStorage();
 const upload = multer({ memoStorage });
 
+//Uploading a file to imgix.
+app.post("/uploadToImgix", upload.single("pic"), async (req, res) => {
+  const file = req.file;
+  console.log("/uploadToImgix in server.js");
+
+  var config = {
+    method: "post",
+    url:
+      `https://api.imgix.com/api/v1/sources/upload/62e31fcb03d7afea23063596/` +
+      file.originalname,
+    headers: {
+      Authorization: "Bearer " + process.env.IMGIX_API,
+      "Content-Type": file.mimetype,
+    },
+    data: req.file.buffer,
+  };
+
+  let final = await axios(config)
+    .then(function (response) {
+      console.log("successful call from /uploadToImgix in server.js");
+      return response.data;
+    })
+    .catch(function (error) {
+      console.log(error);
+      return error;
+    });
+
+  let trueFinal = {
+    allData: final,
+    theBufferReturned: req.file.buffer,
+  };
+  return res.status(200).send(trueFinal);
+});
+
 ////
 app.post("/startImgixSession", upload.single("pic"), async (req, res) => {
   const file = req.file;
