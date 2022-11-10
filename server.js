@@ -51,122 +51,153 @@ app.post("/uploadToImgix", upload.single("pic"), async (req, res) => {
   return res.status(200).send(trueFinal);
 });
 
-////
-app.post("/startImgixSession", upload.single("pic"), async (req, res) => {
-  const file = req.file;
-  console.log("Starting imgix session in server.js");
-  //console.log(file);
-  console.log(".env is " + process.env.IMGIX_API);
-  var config = {
-    method: "post",
-    url:
-      `https://api.imgix.com/api/v1/sources/62e31fcb03d7afea23063596/upload-sessions/` +
-      file.originalname,
-    headers: {
-      Authorization: "Bearer " + process.env.IMGIX_API,
-      "Content-Type": file.mimetype,
-    },
-    data: req.file.buffer,
-  };
-
-  let final = await axios(config)
-    .then(function (response) {
-      console.log("successfully did /startImgixSession axios call");
-      return response.data;
-    })
-    .catch(function (error) {
-      console.log(error);
-      return error;
-    });
-
-  let trueFinal = {
-    allData: final,
-    theBufferReturned: req.file.buffer,
-  };
-  return res.status(200).send(trueFinal);
-});
-
-app.post("/postSession", upload.single("pic"), async (req, res) => {
-  let fileBufferData = req.file.buffer;
-  let theAWSurl = req.body.awsURL;
-
-  var config = {
-    method: "put",
-    url: theAWSurl,
-    headers: {
-      "Content-Type": "video/mp4",
-    },
-    data: fileBufferData,
-  };
-
-  let finalPost = await axios(config)
-    .then(function (response) {
-      console.log("inside the axios for /postSession");
-      console.log(JSON.stringify(response.data));
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-
-  return res.status(200).send(finalPost);
-});
-
-//Checks status of an imgix session.
-app.post("/checkImgixSessionStatus", async (req, res) => {
+//Get Status:
+app.post("/imgixSensitiveData", async (req, res) => {
   console.log("Checking imgix status in /checkImgixSessionStatus");
-  const gssid = req.body.grabbedSessionSourceID;
+  const nameOfImage = req.body.theValue;
+  console.log(nameOfImage);
 
   var config = {
     method: "get",
     url:
-      `https://api.imgix.com/api/v1/sources/62e31fcb03d7afea23063596/upload-sessions/` +
-      gssid,
+      `https://api.imgix.com/api/v1/assets/62e31fcb03d7afea23063596` +
+      nameOfImage,
     headers: {
       Authorization: "Bearer " + process.env.IMGIX_API,
       "Content-Type": "application/json",
     },
   };
 
-  let final = await axios(config)
+  let result = await axios(config)
     .then(function (response) {
-      console.log("INSIDE THE .then() FOR /checkImgixSessionStatus");
-      //console.log(JSON.stringify(response.data));
-      return response.data;
+      //console.log("Ran /imgixSensitiveData in server.js");
+      console.log(JSON.stringify(response.data.data.attributes.warning_adult));
+      return response.data.data.attributes.warning_adult;
     })
     .catch(function (error) {
       console.log(error);
       return error;
     });
-  return res.status(200).send(final);
+  let number = result.toString();
+  return res.status(200).send(number);
 });
 
-//Close a session
-app.post("/checkImgixCloseSession", async (req, res) => {
-  console.log("Checking imgix status in /checkImgixCloseSession");
-  const gssid = req.body.grabbedSessionSourceID;
+////
+// app.post("/startImgixSession", upload.single("pic"), async (req, res) => {
+//   const file = req.file;
+//   console.log("Starting imgix session in server.js");
+//   //console.log(file);
+//   console.log(".env is " + process.env.IMGIX_API);
+//   var config = {
+//     method: "post",
+//     url:
+//       `https://api.imgix.com/api/v1/sources/62e31fcb03d7afea23063596/upload-sessions/` +
+//       file.originalname,
+//     headers: {
+//       Authorization: "Bearer " + process.env.IMGIX_API,
+//       "Content-Type": file.mimetype,
+//     },
+//     data: req.file.buffer,
+//   };
 
-  var config = {
-    method: "post",
-    url:
-      `https://api.imgix.com/api/v1/sources/62e31fcb03d7afea23063596/upload-sessions/` +
-      gssid,
-    headers: {
-      Authorization: "Bearer " + process.env.IMGIX_API,
-    },
-  };
+//   let final = await axios(config)
+//     .then(function (response) {
+//       console.log("successfully did /startImgixSession axios call");
+//       return response.data;
+//     })
+//     .catch(function (error) {
+//       console.log(error);
+//       return error;
+//     });
 
-  let final = await axios(config)
-    .then(function (response) {
-      console.log("INSIDE THE .then() FOR /checkImgixCloseSession");
-      console.log(JSON.stringify(response.data));
-      return response.data;
-    })
-    .catch(function (error) {
-      console.log(error);
-      return error;
-    });
-  return res.status(200).send(final);
-});
+//   let trueFinal = {
+//     allData: final,
+//     theBufferReturned: req.file.buffer,
+//   };
+//   return res.status(200).send(trueFinal);
+// });
+
+// app.post("/postSession", upload.single("pic"), async (req, res) => {
+//   let fileBufferData = req.file.buffer;
+//   let theAWSurl = req.body.awsURL;
+
+//   var config = {
+//     method: "put",
+//     url: theAWSurl,
+//     headers: {
+//       "Content-Type": "video/mp4",
+//     },
+//     data: fileBufferData,
+//   };
+
+//   let finalPost = await axios(config)
+//     .then(function (response) {
+//       console.log("inside the axios for /postSession");
+//       console.log(JSON.stringify(response.data));
+//     })
+//     .catch(function (error) {
+//       console.log(error);
+//     });
+
+//   return res.status(200).send(finalPost);
+// });
+
+// //Checks status of an imgix session.
+// app.post("/checkImgixSessionStatus", async (req, res) => {
+//   console.log("Checking imgix status in /checkImgixSessionStatus");
+//   const gssid = req.body.grabbedSessionSourceID;
+
+//   var config = {
+//     method: "get",
+//     url:
+//       `https://api.imgix.com/api/v1/sources/62e31fcb03d7afea23063596/upload-sessions/` +
+//       gssid,
+//     headers: {
+//       Authorization: "Bearer " + process.env.IMGIX_API,
+//       "Content-Type": "application/json",
+//     },
+//   };
+
+//   let final = await axios(config)
+//     .then(function (response) {
+//       console.log("INSIDE THE .then() FOR /checkImgixSessionStatus");
+//       //console.log(JSON.stringify(response.data));
+//       return response.data;
+//     })
+//     .catch(function (error) {
+//       console.log(error);
+//       return error;
+//     });
+//   return res.status(200).send(final);
+// });
+
+// //Close a session
+// app.post("/checkImgixCloseSession", async (req, res) => {
+//   console.log("Checking imgix status in /checkImgixCloseSession");
+//   const gssid = req.body.grabbedSessionSourceID;
+
+//   var config = {
+//     method: "post",
+//     url:
+//       `https://api.imgix.com/api/v1/sources/62e31fcb03d7afea23063596/upload-sessions/` +
+//       gssid,
+//     headers: {
+//       Authorization: "Bearer " + process.env.IMGIX_API,
+//     },
+//   };
+
+//   let final = await axios(config)
+//     .then(function (response) {
+//       console.log("INSIDE THE .then() FOR /checkImgixCloseSession");
+//       console.log(JSON.stringify(response.data));
+//       return response.data;
+//     })
+//     .catch(function (error) {
+//       console.log(error);
+//       return error;
+//     });
+//   return res.status(200).send(final);
+// });
 
 if (process.env.NODE_ENV === "production") {
   // Serve any static files
